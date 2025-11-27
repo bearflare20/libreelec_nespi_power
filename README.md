@@ -32,9 +32,9 @@ Based off [marcelonovaes lakka nespi script](https://github.com/marcelonovaes/la
    
 
 5. In the terminal, type the one-line command below(Case sensitive):
-
+   ```
    wget -O - "https://github.com/bearflare20/libreelec_nespi_power/raw/master/install.sh" | bash
-
+   ```
 6. Your Raspberry Pi will reboot and you're done!
 
 
