@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 import sys
-
-# add kodi addon libs
 sys.path.append('/storage/.kodi/addons/virtual.rpi-tools/lib')
 
-from gpiozero import Button, LED
+from gpiozero import DigitalInputDevice LED
 import os
 import time
 from multiprocessing import Process
@@ -14,36 +12,40 @@ resetPin = 2
 ledPin = 14
 powerenPin = 4
 
-powerBtn = Button(powerPin, pull_up=True, bounce_time=0.05)
-resetBtn = Button(resetPin, pull_up=True, bounce_time=0.05)
+power = DigitalInputDevice(powerPin pull_up=True)
+reset = DigitalInputDevice(resetPin pull_up=True)
 led = LED(ledPin)
-powerEnable = LED(powerenPin)
-powerEnable.on()
+powerenable = LED(powerenPin)
+powerenable.on()
 
 def poweroff():
     while True:
-        powerBtn.wait_for_press()
-        os.system("poweroff")
+        if power.value == 0:
+            os.system("poweroff")
+        time.sleep(0.1)
 
-def ledBlink():
+def resetfunc():
+    while True:
+        if reset.value == 0:
+            os.system("reboot")
+        time.sleep(0.1)
+
+def ledblink():
     while True:
         led.on()
-        powerBtn.wait_for_press()
-        while powerBtn.is_pressed:
-            led.off()
-            time.sleep(0.2)
-            led.on()
-            time.sleep(0.2)
-
-def reset():
-    while True:
-        resetBtn.wait_for_press()
-        os.system("reboot")
+        if power.value == 0:
+            while power.value == 0:
+                led.off()
+                time.sleep(0.2)
+                led.on()
+                time.sleep(0.2)
+        time.sleep(0.1)
 
 if __name__ == "__main__":
+    from multiprocessing import Process
     p1 = Process(target=poweroff)
-    p2 = Process(target=ledBlink)
-    p3 = Process(target=reset)
+    p2 = Process(target=resetfunc)
+    p3 = Process(target=ledblink)
 
     p1.start()
     p2.start()
