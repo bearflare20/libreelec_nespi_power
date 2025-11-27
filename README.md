@@ -20,7 +20,9 @@ Based off [marcelonovaes lakka nespi script](https://github.com/marcelonovaes/la
 
 2. Make sure SSH is enabled in LibreELEC (Config / LibreELEC / Services / SSH Enable is ON).
 
-3. ssh into libreelec:
+3. Install Raspberry Pi Tools from repository, LibreELEC Add-ons / Program add-ons / Raspberry Pi Tools
+
+4. ssh into libreelec:
 
    ```bash
    ssh root@YOUR_LIBRELEC_IP_ADDRESS
@@ -29,11 +31,11 @@ Based off [marcelonovaes lakka nespi script](https://github.com/marcelonovaes/la
 
    
 
-4. In the terminal, type the one-line command below(Case sensitive):
+5. In the terminal, type the one-line command below(Case sensitive):
 
    wget -O - "https://github.com/bearflare20/libreelec_nespi_power/raw/master/install.sh" | bash
 
-5. Your Raspberry Pi will reboot and you're done!
+6. Your Raspberry Pi will reboot and you're done!
 
 
 
