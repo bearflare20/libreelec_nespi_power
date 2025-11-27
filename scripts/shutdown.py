@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import sys
-sys.path.append('/storage/lib/')
 import RPi.GPIO as GPIO
 import os
 import time
