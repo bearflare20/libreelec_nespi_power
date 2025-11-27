@@ -17,7 +17,7 @@ Adding the ability of soft shutdown to libreelec and with retroflag pi cases
 4. ssh into libreelec:
 
    ```bash
-   ssh root@YOUR_LIBRELEC_IP_ADDRESS
+   ssh root@YOUR_LIBREELEC_IP_ADDRESS
    password: libreelec (if unchanged)
    ```
 
