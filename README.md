@@ -1,5 +1,5 @@
 # libreelec_nespi_power
-LibreELEC 12.2.1 + RetroFlag Case + Shutdown buttons
+LibreELEC 12 + RetroFlag Case + Shutdown buttons
 - tested to work with superpi4 case
 - not tested with nespi case
 
