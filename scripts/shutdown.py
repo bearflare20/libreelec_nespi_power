@@ -1,16 +1,19 @@
 #!/usr/bin/python3
+import sys
+
+# add kodi addon libs
+sys.path.append('/storage/.kodi/addons/virtual.rpi-tools/lib')
+
 from gpiozero import Button, LED
 import os
 import time
 from multiprocessing import Process
 
-# BCM pins
 powerPin = 3
 resetPin = 2
 ledPin = 14
 powerenPin = 4
 
-# objects
 powerBtn = Button(powerPin, pull_up=True, bounce_time=0.05)
 resetBtn = Button(resetPin, pull_up=True, bounce_time=0.05)
 led = LED(ledPin)
