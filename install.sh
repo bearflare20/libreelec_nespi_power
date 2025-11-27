@@ -17,7 +17,7 @@ fi
 cd /storage/
 
 echo "Downloading package"
-wget -O nespi_power.zip "https://github.com/bearflare20/libreelec_nespi_power/archive/master.zip"
+wget -O nespi_power.zip "https://github.com/bearflare20/libreelec_retroflag_safeshutdown/archive/master.zip"
 
 echo "Unpacking"
 unzip -o nespi_power.zip
