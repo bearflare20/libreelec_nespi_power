@@ -1,16 +1,20 @@
 #!/bin/bash
 
-# LibreELEC Nespi Power Installer (for RPi.GPIO addon)
+# LibreELEC Nespi Power Installer (checks for Raspberry Pi Tools)
 
 if [[ $EUID -ne 0 ]]; then
    echo "Run as root"
    exit 1
 fi
 
-cd /storage/
+# check for raspberry pi tools addon
+if [ ! -d "/storage/.kodi/addons/virtual.rpi-tools" ]; then
+    echo "Raspberry Pi Tools addon not installed"
+    echo "Install it from Kodi Addons then rerun installer"
+    exit 1
+fi
 
-echo "Make sure Raspberry Pi Tools is installed, CTRL+C to cancel installation"
-sleep 5
+cd /storage/
 
 echo "Downloading package..."
 wget -O nespi_power.zip "https://github.com/bearflare20/libreelec_nespi_power/archive/master.zip"
@@ -19,20 +23,17 @@ echo "Unpacking..."
 unzip -o nespi_power.zip
 cd libreelec_nespi_power-master/
 
-# Copy scripts from repo
+# copy scripts
 mkdir -p /storage/scripts
 cp -R scripts/* /storage/scripts/
-
-# make python scripts executable
 chmod +x /storage/scripts/*.py
 
-# ensure autostart exists
+# autostart setup
 mkdir -p /storage/.config
 if [ ! -f /storage/.config/autostart.sh ]; then
     echo "#!/bin/sh" > /storage/.config/autostart.sh
 fi
 
-# add shutdown script to autostart if missing
 if ! grep -q "shutdown.py" /storage/.config/autostart.sh; then
     echo "python /storage/scripts/shutdown.py &" >> /storage/.config/autostart.sh
 fi
