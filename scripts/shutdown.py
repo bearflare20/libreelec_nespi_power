@@ -1,71 +1,44 @@
 #!/usr/bin/python3
+import RPi.GPIO as GPIO
 import os
 import time
 from multiprocessing import Process
 
-# GPIO pin numbers (BCM)
-powerPin = 3
-resetPin = 2
-ledPin = 14
-powerenPin = 4
-
-def export(pin):
-    if not os.path.exists(f"/sys/class/gpio/gpio{pin}"):
-        with open("/sys/class/gpio/export", "w") as f:
-            f.write(str(pin))
-
-def set_dir(pin, direction):
-    with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
-        f.write(direction)
-
-def write(pin, value):
-    with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
-        f.write(str(value))
-
-def read(pin):
-    with open(f"/sys/class/gpio/gpio{pin}/value", "r") as f:
-        return f.read().strip()
-
-def wait_for_falling(pin):
-    # basic polling since sysfs doesnt support edge waits reliably everywhere
-    while True:
-        if read(pin) == "0":
-            time.sleep(0.05)
-            if read(pin) == "0":
-                return
-        time.sleep(0.05)
+# pins (BCM)
+powerPin = 3      # power button
+resetPin = 2      # reset button
+ledPin = 14       # LED
+powerenPin = 4    # power enable
 
 def init():
-    export(powerPin)
-    export(resetPin)
-    export(ledPin)
-    export(powerenPin)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
 
-    set_dir(powerPin, "in")
-    set_dir(resetPin, "in")
-    set_dir(ledPin, "out")
-    set_dir(powerenPin, "out")
+    GPIO.setup(powerPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(resetPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(ledPin, GPIO.OUT)
+    GPIO.setup(powerenPin, GPIO.OUT)
 
-    write(powerenPin, 1)
+    GPIO.output(powerenPin, GPIO.HIGH)
 
 def poweroff():
     while True:
-        wait_for_falling(powerPin)
+        GPIO.wait_for_edge(powerPin, GPIO.FALLING)
         os.system("poweroff")
 
 def ledBlink():
     while True:
-        write(ledPin, 1)
-        wait_for_falling(powerPin)
-        while read(powerPin) == "0":
-            write(ledPin, 0)
+        GPIO.output(ledPin, GPIO.HIGH)
+        GPIO.wait_for_edge(powerPin, GPIO.FALLING)
+        while GPIO.input(powerPin) == GPIO.LOW:
+            GPIO.output(ledPin, GPIO.LOW)
             time.sleep(0.2)
-            write(ledPin, 1)
+            GPIO.output(ledPin, GPIO.HIGH)
             time.sleep(0.2)
 
 def reset():
     while True:
-        wait_for_falling(resetPin)
+        GPIO.wait_for_edge(resetPin, GPIO.FALLING)
         os.system("reboot")
 
 if __name__ == "__main__":
@@ -82,3 +55,4 @@ if __name__ == "__main__":
     p1.join()
     p2.join()
     p3.join()
+    GPIO.cleanup()
