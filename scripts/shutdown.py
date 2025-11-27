@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import sys
 sys.path.append('/storage/lib/')
 import RPi.GPIO as GPIO
@@ -5,60 +6,58 @@ import os
 import time
 from multiprocessing import Process
 
-#initialize pins
-powerPin = 3 #pin 5
-ledPin = 14 #TXD
-resetPin = 2 #pin 13
-powerenPin = 4 #pin 5
+# initialize pins
+powerPin = 3      # pin 5 (power button)
+ledPin = 14       # TXD
+resetPin = 2      # pin 13 (reset button)
+powerenPin = 4    # pin 5 (power enable)
 
-#initialize GPIO settings
+# GPIO initialization
 def init():
-	GPIO.setmode(GPIO.BCM)
-	GPIO.setup(powerPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-	GPIO.setup(resetPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-	GPIO.setup(ledPin, GPIO.OUT)
-	GPIO.setup(powerenPin, GPIO.OUT)
-	GPIO.output(powerenPin, GPIO.HIGH)
-	GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(powerPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(resetPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(ledPin, GPIO.OUT)
+    GPIO.setup(powerenPin, GPIO.OUT)
+    GPIO.output(powerenPin, GPIO.HIGH)
+    GPIO.setwarnings(False)
 
-#waits for user to hold button up to 1 second before issuing poweroff command
+# Poweroff handler (LibreELEC uses busybox poweroff)
 def poweroff():
-	while True:
-		GPIO.wait_for_edge(powerPin, GPIO.FALLING)
-		os.system("shutdown -h now")
+    while True:
+        GPIO.wait_for_edge(powerPin, GPIO.FALLING)
+        os.system("poweroff")
 
-#blinks the LED to signal button being pushed
+# LED blink during power button hold
 def ledBlink():
-	while True:
-		GPIO.output(ledPin, GPIO.HIGH)
-		GPIO.wait_for_edge(powerPin, GPIO.FALLING)
-		start = time.time()
-		while GPIO.input(powerPin) == GPIO.LOW:
-			GPIO.output(ledPin, GPIO.LOW)
-			time.sleep(0.2)
-			GPIO.output(ledPin, GPIO.HIGH)
-			time.sleep(0.2)
+    while True:
+        GPIO.output(ledPin, GPIO.HIGH)
+        GPIO.wait_for_edge(powerPin, GPIO.FALLING)
+        while GPIO.input(powerPin) == GPIO.LOW:
+            GPIO.output(ledPin, GPIO.LOW)
+            time.sleep(0.2)
+            GPIO.output(ledPin, GPIO.HIGH)
+            time.sleep(0.2)
 
-#resets the pi
+# Reset handler (LibreELEC reboot command)
 def reset():
-	while True:
-		GPIO.wait_for_edge(resetPin, GPIO.FALLING)
-		os.system("shutdown -r now")
-
+    while True:
+        GPIO.wait_for_edge(resetPin, GPIO.FALLING)
+        os.system("reboot")
 
 if __name__ == "__main__":
-	#initialize GPIO settings
-	init()
-	#create a multiprocessing.Process instance for each function to enable parallelism 
-	powerProcess = Process(target = poweroff)
-	powerProcess.start()
-	ledProcess = Process(target = ledBlink)
-	ledProcess.start()
-	resetProcess = Process(target = reset)
-	resetProcess.start()
+    init()
 
-	powerProcess.join()
-	ledProcess.join()
-	resetProcess.join()
+    powerProcess = Process(target=poweroff)
+    ledProcess = Process(target=ledBlink)
+    resetProcess = Process(target=reset)
 
-	GPIO.cleanup()
+    powerProcess.start()
+    ledProcess.start()
+    resetProcess.start()
+
+    powerProcess.join()
+    ledProcess.join()
+    resetProcess.join()
+
+    GPIO.cleanup()
