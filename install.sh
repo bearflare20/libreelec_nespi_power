@@ -17,10 +17,7 @@ echo "Unpacking..."
 unzip -o nespi_power.zip
 cd libreelec_nespi_power-master/
 
-# Copy libs + scripts directly from repo
-mkdir -p /storage/lib
-cp -R lib/* /storage/lib/
-
+# scripts from repo
 mkdir -p /storage/scripts
 cp -R scripts/* /storage/scripts/
 
