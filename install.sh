@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# LibreELEC Nespi Power Installer (bearflare20 fork)
-# -----------------------------------------------------
+# LibreELEC Nespi Power Installer (for RPi.GPIO addon)
 
 if [[ $EUID -ne 0 ]]; then
    echo "Run as root"
@@ -10,6 +9,9 @@ fi
 
 cd /storage/
 
+echo "Make sure Raspberry Pi Tools is installed, CTRL+C to cancel installation"
+sleep 5
+
 echo "Downloading package..."
 wget -O nespi_power.zip "https://github.com/bearflare20/libreelec_nespi_power/archive/master.zip"
 
@@ -17,20 +19,20 @@ echo "Unpacking..."
 unzip -o nespi_power.zip
 cd libreelec_nespi_power-master/
 
-# scripts from repo
+# Copy scripts from repo
 mkdir -p /storage/scripts
 cp -R scripts/* /storage/scripts/
 
-# Make sure python files are executable
+# make python scripts executable
 chmod +x /storage/scripts/*.py
 
-# Ensure autostart exists
+# ensure autostart exists
 mkdir -p /storage/.config
 if [ ! -f /storage/.config/autostart.sh ]; then
     echo "#!/bin/sh" > /storage/.config/autostart.sh
 fi
 
-# Add python boot line if missing
+# add shutdown script to autostart if missing
 if ! grep -q "shutdown.py" /storage/.config/autostart.sh; then
     echo "python /storage/scripts/shutdown.py &" >> /storage/.config/autostart.sh
 fi
