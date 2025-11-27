@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# LibreELEC NESPi Power Installer with systemd service
+# LibreELEC NESPi Power Installer with systemd service (fixed for lgpio)
 
 if [[ $EUID -ne 0 ]]; then
    echo "run as root"
@@ -28,15 +28,21 @@ mkdir -p /storage/scripts
 cp -R scripts/* /storage/scripts/
 chmod +x /storage/scripts/*.py
 
+# create lgpio notify dir
+mkdir -p /storage/.config/lgpio
+chown root:root /storage/.config/lgpio
+
 # create systemd service
 mkdir -p /storage/.config/system.d
 cat <<EOF > /storage/.config/system.d/nespi-power.service
 [Unit]
 Description=NESPi Power/Reset Service
-After=network.target
+After=multi-user.target
 
 [Service]
 Type=simple
+Environment=LGPIO_NFY_DIR=/storage/.config/lgpio
+WorkingDirectory=/storage/scripts
 ExecStart=/usr/bin/python3 /storage/scripts/shutdown.py
 Restart=always
 User=root
@@ -45,8 +51,9 @@ User=root
 WantedBy=multi-user.target
 EOF
 
-# enable service
-systemctl enable /storage/.config/system.d/nespi-power.service
+# reload systemd and enable service
+systemctl daemon-reload
+systemctl enable nespi-power.service
 
 echo "install complete rebooting in 3"
 sleep 3
