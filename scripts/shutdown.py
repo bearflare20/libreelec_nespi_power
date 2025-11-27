@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import sys
+sys.path.append('/storage/.kodi/addons/virtual.rpi-tools/lib')
 import RPi.GPIO as GPIO
 import os
 import time
