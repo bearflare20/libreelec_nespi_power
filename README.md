@@ -1,11 +1,11 @@
-# libreelec_nespi_power
+# libreelec_retroflag_safeshutdown
 LibreELEC 12 + RetroFlag Case + Shutdown buttons
 
 
 
 
 
-Adding the ability of soft shutdown to libreelec and with retroflag pi cases
+Adding the ability of safe shutdown to libreelec and with retroflag pi cases
 ### How to install
 
 1. Make sure the raspberry pi is connected to the internet.
@@ -25,7 +25,7 @@ Adding the ability of soft shutdown to libreelec and with retroflag pi cases
 
 5. In the terminal, type the one-line command below(Case sensitive):
    ```
-   wget -O - "https://github.com/bearflare20/libreelec_nespi_power/raw/master/install.sh" | bash
+   wget -O - "https://github.com/bearflare20/libreelec_retroflag_safeshutdown/raw/master/install.sh" | bash
    ```
 6. Your Raspberry Pi will reboot and you're done!
 ### Notes
