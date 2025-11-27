@@ -10,16 +10,16 @@ fi
 # check RPi Tools addon
 if [ ! -d "/storage/.kodi/addons/virtual.rpi-tools" ]; then
     echo "Raspberry Pi Tools addon missing"
-    echo "install it from Kodi addons then rerun installer"
+    echo "Install it from LibreELEC addons then rerun installer"
     exit 1
 fi
 
 cd /storage/
 
-echo "downloading package"
+echo "Downloading package"
 wget -O nespi_power.zip "https://github.com/bearflare20/libreelec_nespi_power/archive/master.zip"
 
-echo "unpacking"
+echo "Unpacking"
 unzip -o nespi_power.zip
 cd libreelec_nespi_power-master/
 
@@ -55,6 +55,6 @@ EOF
 systemctl daemon-reload
 systemctl enable nespi-power.service
 
-echo "install complete rebooting in 3"
+echo "Install complete, rebooting in 3 seconds"
 sleep 3
 reboot
