@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# LibreELEC Nespi Power Installer
+# LibreELEC NESPi Power Installer with systemd service
 
 if [[ $EUID -ne 0 ]]; then
    echo "run as root"
    exit 1
 fi
 
-# check for raspberry pi tools
+# check RPi Tools addon
 if [ ! -d "/storage/.kodi/addons/virtual.rpi-tools" ]; then
-    echo "raspberry pi tools addon missing"
-    echo "install it from kodi addons then rerun installer"
+    echo "Raspberry Pi Tools addon missing"
+    echo "install it from Kodi addons then rerun installer"
     exit 1
 fi
 
@@ -28,17 +28,25 @@ mkdir -p /storage/scripts
 cp -R scripts/* /storage/scripts/
 chmod +x /storage/scripts/*.py
 
-# autostart
-mkdir -p /storage/.config
+# create systemd service
+mkdir -p /storage/.config/system.d
+cat <<EOF > /storage/.config/system.d/nespi-power.service
+[Unit]
+Description=NESPi Power/Reset Service
+After=network.target
 
-if [ ! -f /storage/.config/autostart.sh ]; then
-    echo "#!/bin/sh" > /storage/.config/autostart.sh
-    chmod +x /storage/.config/autostart.sh
-fi
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /storage/scripts/shutdown.py
+Restart=always
+User=root
 
-if ! grep -q "shutdown.py" /storage/.config/autostart.sh; then
-    echo "( python3 /storage/scripts/shutdown.py ) &" >> /storage/.config/autostart.sh
-fi
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# enable service
+systemctl enable /storage/.config/system.d/nespi-power.service
 
 echo "install complete rebooting in 3"
 sleep 3
