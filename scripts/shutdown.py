@@ -1,56 +1,70 @@
-#!/usr/bin/python3
 import sys
-sys.path.append('/storage/.kodi/addons/virtual.rpi-tools/lib')
-
-from gpiozero import DigitalInputDevice LED
 import os
 import time
 from multiprocessing import Process
 
+# add the virtual rpi-tools lib path
+sys.path.append('/storage/.kodi/addons/virtual.rpi-tools/lib')
+
+import lgpio
+
+# pins
 powerPin = 3
-resetPin = 2
 ledPin = 14
+resetPin = 2
 powerenPin = 4
 
-power = DigitalInputDevice(powerPin pull_up=True)
-reset = DigitalInputDevice(resetPin pull_up=True)
-led = LED(ledPin)
-powerenable = LED(powerenPin)
-powerenable.on()
+# initialize GPIO
+def init():
+    global chip
+    chip = lgpio.gpiochip_open(0)  # open gpio chip 0
+    # inputs
+    lgpio.gpio_claim_input(chip, powerPin)
+    lgpio.gpio_claim_input(chip, resetPin)
+    # outputs
+    lgpio.gpio_claim_output(chip, ledPin, 0)
+    lgpio.gpio_claim_output(chip, powerenPin, 1)  # HIGH
+    print("GPIO initialized 🔥")
 
+# wait for button and power off
 def poweroff():
     while True:
-        if power.value == 0:
-            os.system("poweroff")
-        time.sleep(0.1)
+        while lgpio.gpio_read(chip, powerPin):
+            time.sleep(0.1)
+        os.system("kodi-send --action=Powerdown")
+        time.sleep(5)
+        os.system("shutdown --poweroff now")
 
-def resetfunc():
+# blink LED when button held
+def ledBlink():
     while True:
-        if reset.value == 0:
-            os.system("reboot")
-        time.sleep(0.1)
+        while lgpio.gpio_read(chip, powerPin):
+            time.sleep(0.1)
+        start = time.time()
+        while lgpio.gpio_read(chip, powerPin) == 0:
+            lgpio.gpio_write(chip, ledPin, 0)
+            time.sleep(0.2)
+            lgpio.gpio_write(chip, ledPin, 1)
+            time.sleep(0.2)
 
-def ledblink():
+# reset pi
+def reset():
     while True:
-        led.on()
-        if power.value == 0:
-            while power.value == 0:
-                led.off()
-                time.sleep(0.2)
-                led.on()
-                time.sleep(0.2)
-        time.sleep(0.1)
+        while lgpio.gpio_read(chip, resetPin):
+            time.sleep(0.1)
+        os.system("shutdown -r now")
 
 if __name__ == "__main__":
-    from multiprocessing import Process
-    p1 = Process(target=poweroff)
-    p2 = Process(target=resetfunc)
-    p3 = Process(target=ledblink)
+    init()
+    powerProcess = Process(target=poweroff)
+    powerProcess.start()
+    ledProcess = Process(target=ledBlink)
+    ledProcess.start()
+    resetProcess = Process(target=reset)
+    resetProcess.start()
 
-    p1.start()
-    p2.start()
-    p3.start()
+    powerProcess.join()
+    ledProcess.join()
+    resetProcess.join()
 
-    p1.join()
-    p2.join()
-    p3.join()
+    lgpio.gpiochip_close(chip)
