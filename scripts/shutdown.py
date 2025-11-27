@@ -1,51 +1,43 @@
 #!/usr/bin/python3
-import sys
-sys.path.append('/storage/.kodi/addons/virtual.rpi-tools/lib')
-import RPi.GPIO as GPIO
+from gpiozero import Button, LED
 import os
 import time
 from multiprocessing import Process
 
-# pins (BCM)
-powerPin = 3      # power button
-resetPin = 2      # reset button
-ledPin = 14       # LED
-powerenPin = 4    # power enable
+# BCM pins
+powerPin = 3
+resetPin = 2
+ledPin = 14
+powerenPin = 4
 
-def init():
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-
-    GPIO.setup(powerPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(resetPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(ledPin, GPIO.OUT)
-    GPIO.setup(powerenPin, GPIO.OUT)
-
-    GPIO.output(powerenPin, GPIO.HIGH)
+# objects
+powerBtn = Button(powerPin, pull_up=True, bounce_time=0.05)
+resetBtn = Button(resetPin, pull_up=True, bounce_time=0.05)
+led = LED(ledPin)
+powerEnable = LED(powerenPin)
+powerEnable.on()
 
 def poweroff():
     while True:
-        GPIO.wait_for_edge(powerPin, GPIO.FALLING)
+        powerBtn.wait_for_press()
         os.system("poweroff")
 
 def ledBlink():
     while True:
-        GPIO.output(ledPin, GPIO.HIGH)
-        GPIO.wait_for_edge(powerPin, GPIO.FALLING)
-        while GPIO.input(powerPin) == GPIO.LOW:
-            GPIO.output(ledPin, GPIO.LOW)
+        led.on()
+        powerBtn.wait_for_press()
+        while powerBtn.is_pressed:
+            led.off()
             time.sleep(0.2)
-            GPIO.output(ledPin, GPIO.HIGH)
+            led.on()
             time.sleep(0.2)
 
 def reset():
     while True:
-        GPIO.wait_for_edge(resetPin, GPIO.FALLING)
+        resetBtn.wait_for_press()
         os.system("reboot")
 
 if __name__ == "__main__":
-    init()
-
     p1 = Process(target=poweroff)
     p2 = Process(target=ledBlink)
     p3 = Process(target=reset)
@@ -57,4 +49,3 @@ if __name__ == "__main__":
     p1.join()
     p2.join()
     p3.join()
-    GPIO.cleanup()
